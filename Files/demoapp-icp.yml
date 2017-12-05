@@ -1,0 +1,87 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: demoapp
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: demoapp
+    spec:
+      containers:
+      - name: node
+        image: mycluster.icp:8500/demoapp/demoapp:1
+        ports:
+        - containerPort: 3000 
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mongo
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:3.4.10
+          ports:
+          - containerPort: 27017
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mongo-express
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo-express
+    spec:
+      containers:
+        - name: mongo-express
+          image: mongo-express:0.42.2
+          ports:
+          - containerPort: 8081
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  mongo
+spec:
+  selector:
+    app:  mongo
+  type: ClusterIP
+  ports:
+  - name:  mongo
+    port:  27017
+    targetPort:  27017
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  demoapp
+spec:
+  selector:
+    app:  demoapp
+  type: LoadBalancer
+  ports:
+  - name:  demoapp
+    port:  3000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  mongo-express
+spec:
+  selector:
+    app:  mongo-express
+  type: LoadBalancer
+  ports:
+  - name:  mongo-express
+    port:  8081
